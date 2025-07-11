@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fischarten im Wandel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      scroll-behavior: smooth;
+      background: #f7fafc;
+      overflow-x: hidden;
+    }
+    body {
+      color: #1c1c1c;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .scroll-container {
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      height: 100vh;
+    }
+    section.fullscreen-section {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding: 0;
+      scroll-snap-align: start;
+      background: #fff;
+      transition: background 0.6s;
+    }
+    section.fullscreen-section:nth-child(even) {
+      background: #f3f8fa;
+    }
+    .banner {
+      width: 100vw;
+      min-height: 60px;
+      background: #23272b;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 2vw;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      transition: opacity 0.5s;
+    }
+    .banner-text {
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .banner-logo {
+      height: 42px;
+      width: auto;
+      display: block;
+    }
+    .video-bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+    }
+    /* Wrapper für Content über Hintergrundbild */
+    .section-content, .szenarien-content {
+      position: relative;
+      z-index: 2;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .title-content {
+      position: relative;
+      z-index: 2;
+      width: 100vw;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(35,39,43, 0.60);
+      text-align: center;
+    }
+    .impact-title {
+      font-size: calc(3vw + 10px);
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 1rem;
+      letter-spacing: -1px;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    .impact-title-black {
+      font-size: 2.6rem;
+      font-weight: bold;
+      color: #23272b;
+      margin-bottom: 1.2rem;
+      letter-spacing: -1px;
+      text-align: center;
+      line-height: 1.1;
+      margin-top: 3.5rem;
+    }
+    .impact-title-section {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #23272b;
+      margin-bottom: 2.2rem;
+      letter-spacing: -1px;
+      text-align: center;
+      line-height: 1.1;
+      margin-top: 3.5rem;
+    }
+    .impact-subtitle {
+      font-size: calc(1.5vw + 10px);
+      color: #fff;
+      margin-bottom: 2rem;
+      font-weight: 500;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    .scroll-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 1.2rem;
+      opacity: 0.85;
+      letter-spacing: 0.05em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+      animation: fadeinout 2.5s infinite;
+    }
+    @keyframes fadeinout {
+      0%,100% { opacity: 0.85; }
+      50% { opacity: 0.35; }
+    }
+    .scroll-hint-arrow {
+      font-size: 2.2rem;
+      margin-bottom: -0.2rem;
+      animation: bounce 1.5s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0);}
+      50% { transform: translateY(10px);}
+    }
+    .section-spacer {
+      height: 10vh;
+      min-height: 60px;
+      background: transparent;
+      width: 100vw;
+    }
+    .forelle-bg-section {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      background: url('img/forelle_tb.png') no-repeat center center fixed;
+      background-size: cover;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .forelle-bg-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(35,39,43, 0.18);
+      z-index: 1;
+    }
+    .forelle-bg-content {
+      position: relative;
+      z-index: 2;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .forelle-chunk1-title {
+      font-size: 2.6rem;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 0.2rem;
+      letter-spacing: -1px;
+      text-align: center;
+      line-height: 1.1;
+      margin-top: 3.5rem;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .forelle-chunk1-subtitle {
+      font-size: 1.5rem;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 2.2rem;
+      text-align: center;
+      letter-spacing: 0.03em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .forelle-anim-wrapper {
+      width: 100vw;
+      height: 240px;
+      position: relative;
+      margin: 0 0 2rem 0;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .forelle-anim-img {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 320px;
+      max-width: 80vw;
+      transform: translate(-50%, 0) scale(1) rotate(0deg);
+      opacity: 0.98;
+      filter: drop-shadow(0 8px 24px rgba(30,60,90,0.12));
+      z-index: 2;
+    }
+    .forelle-anim-img.swim {
+      animation:
+        forelle-swim-in-center 4.5s cubic-bezier(.55,1.2,.55,1) forwards,
+        forelle-float 3.8s ease-in-out 4.5s infinite alternate;
+    }
+    @keyframes forelle-swim-in-center {
+      0% {
+        transform: translate(-140vw, 0) scale(0.92) rotate(-7deg);
+        opacity: 0.7;
+      }
+      70% {
+        transform: translate(-55vw, 0) scale(1.04) rotate(4deg);
+        opacity: 1;
+      }
+      85% {
+        transform: translate(-55vw, 0) scale(1.01) rotate(-2deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, 0) scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+    @keyframes forelle-float {
+      0% {
+        transform: translate(-50%, 0) scale(1) rotate(0deg);
+        filter: drop-shadow(0 8px 24px rgba(30,60,90,0.12));
+      }
+      30% {
+        transform: translate(-50%, -8px) scale(1.01) rotate(2deg);
+        filter: drop-shadow(0 16px 32px rgba(30,60,90,0.10));
+      }
+      60% {
+        transform: translate(-50%, 8px) scale(0.99) rotate(-2deg);
+        filter: drop-shadow(0 4px 16px rgba(30,60,90,0.14));
+      }
+      100% {
+        transform: translate(-50%, 0) scale(1) rotate(0deg);
+        filter: drop-shadow(0 8px 24px rgba(30,60,90,0.12));
+      }
+    }
+    .blog-text {
+      max-width: 60vw;
+      margin: 0 auto;
+      font-size: 1.18rem;
+      line-height: 1.8;
+      color: #23272b;
+      background: transparent;
+      padding: 0 1.5rem 2.5rem 1.5rem;
+      letter-spacing: 0.01em;
+      font-family: 'Georgia', 'Times New Roman', Times, serif;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .blog-text p {
+      margin-bottom: 1.6em;
+      margin-top: 0;
+    }
+    .quote-box.quote-blue {
+      background: #f1f3fe;
+      color: #23272b;
+      border-left: 10px solid #3D42E3;
+      border-right: none;
+      font-style: italic;
+      box-shadow: 0 2px 12px rgba(61,66,227,0.07);
+      padding: 1.3rem 2.2rem 1.3rem 1.3rem;
+      margin: 2.2rem 0 2.5rem 0;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 12px 0 0 12px;
+      font-size: 1.13rem;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.5;
+    }
+    .quote-box.quote-blue::before {
+      content: """;
+      font-size: 2.5rem;
+      color: #3D42E3;
+      font-weight: bold;
+      vertical-align: middle;
+      margin-right: 0.3em;
+      opacity: 0.7;
+      line-height: 1;
+    }
+    .quote-box.quote-blue::after {
+      content: "";
+    }
+    .temp-iframe-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .temp-iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      background: #fff;
+      position: absolute;
+      left: 0;
+      top: 0;
+      transition: transform 1s cubic-bezier(.77,0,.18,1);
+    }
+    .temp-iframe.slide-left {
+      transform: translateX(-60vw);
+    }
+    .info-box {
+      border-radius: 10px;
+      padding: 2rem 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      max-width: 600px;
+    }
+    .info-box.green { border-left: 8px solid #4caf50; }
+    .info-box.yellow { border-left: 8px solid #ffd600; }
+    .info-box.red { border-left: 8px solid #e53935; }
+    .impact-img {
+      width: 100%;
+      max-width: 600px;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      margin-bottom: 2rem;
+      object-fit: cover;
+      z-index: 1;
+    }
+    
+    /* Neue Styles für Neuenburgersee-Section */
+    .neuenburgersee-section {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #f7fafc;
+      padding: 2rem 0;
+    }
+    .scroll-box-container {
+      max-width: 60vw;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .scroll-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      padding: 2rem;
+      transition: transform 0.3s ease;
+    }
+    .scroll-box:hover {
+      transform: translateY(-2px);
+    }
+    .scroll-box.left {
+      margin-right: auto;
+      max-width: 80%;
+    }
+    .scroll-box.right {
+      margin-left: auto;
+      max-width: 80%;
+    }
+    .scroll-box.center {
+      margin: 0 auto;
+      max-width: 100%;
+    }
+    .text-content {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #23272b;
+      font-family: 'Georgia', 'Times New Roman', Times, serif;
+    }
+    .text-content .bigger-text {
+      font-size: 1.3rem;
+      color: #23272b;
+    }
+    .text-content a {
+      color: #3D42E3;
+      text-decoration: none;
+    }
+    .text-content a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Neue Styles für Szenarien-Section */
+    .szenarien-section {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: url('img/Szenarien.png') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      padding: 4rem 0;
+    }
+    .overlay {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: row;
+      gap: 2rem;
+      justify-content: center;
+      align-items: stretch;
+      flex-wrap: wrap;
+      padding: 0 2rem;
+    }
+    .overlay::before {
+      content: '';
+      position: absolute;
+      top: -4rem;
+      left: -2rem;
+      right: -2rem;
+      bottom: -4rem;
+      background: rgba(247, 250, 252, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      z-index: -1;
+    }
+    .overlay .info-box {
+      flex: 1 1 300px;
+      min-width: 280px;
+      max-width: 350px;
+      margin: 0;
+    }
+    .overlay .info-box h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+      color: #23272b;
+      font-weight: bold;
+    }
+    .overlay .info-box p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin: 0;
+      color: #23272b;
+    }
+    
+    @media (max-width: 900px) {
+      .blog-text {
+        max-width: 90vw;
+      }
+      .scroll-box-container {
+        max-width: 90vw;
+      }
+      .overlay {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      .overlay .info-box {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Banner: nur auf Titelseite sichtbar -->
+<div class="banner" id="mainBanner">
+  <div class="banner-text">
+    Diese Webstory wurde fuer das Modul STD erstellt
+  </div>
+  <img src="img/logo.png" alt="Logo" class="banner-logo">
+</div>
+
+<div class="scroll-container">
+
+<!-- Titelseite -->
+<section class="fullscreen-section" id="titelseite" style="background: #23272b; position:relative;">
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="img/intro_video.mp4" type="video/mp4">
+    Dein Browser unterstuetzt das Video-Tag nicht.
+  </video>
+  <div class="title-content">
+    <h1 class="impact-title">Fischarten im Wandel</h1>
+    <div class="impact-subtitle">Ueberlebenskampf in den Schweizer Seen</div>
+    <div class="scroll-hint">
+      <span class="scroll-hint-arrow">&#8595;</span>
+      Scroll weiter
+    </div>
+  </div>
+</section>
+
+<div class="section-spacer"></div>
+
+<!-- Chunk 1: Vollbild-Hintergrundbild mit weissem Titel -->
+<section class="fullscreen-section forelle-bg-section" id="forelle-bg-section">
+  <div class="forelle-bg-overlay"></div>
+  <img src="img/adriatische forelle.jpg" alt="Adriatische Forelle" class="video-bg">
+  <div class="forelle-bg-content">
+    <h2 class="forelle-chunk1-title">Die Adriatische Forelle</h2>
+    <div class="forelle-chunk1-subtitle">Ein versteckter Schatz der Alpen</div>
+  </div>
+</section>
+
+<div class="section-spacer"></div>
+
+<!-- Chunk 2: Animierte Forelle + Blogtext mit Zitatbox -->
+<section class="fullscreen-section" id="forelle-anim-section" style="background:#fff;">
+  <div class="forelle-anim-wrapper">
+    <img
+      src="img/adriatische_forelle_.png"
+      alt="Adriatische Forelle"
+      class="forelle-anim-img"
+      id="forelle-anim-img"
+    >
+  </div>
+  <div class="blog-text">
+    <p>
+      Die Adriatische Forelle gehoert zu den seltensten Fischen der Schweiz. Sie lebt nur in drei Seen im Sueden: Lago Maggiore, oberer und unterer Luganersee. Anders als andere Forellenarten ist sie extrem an diese Gewaesser angepasst.
+    </p>
+    <p>
+      Seit Jahrhunderten lebt sie in klaren, kalten und sauerstoffreichen Stroemen der Alpen – in einer Welt im Gleichgewicht. Sie bleibt ihr Leben lang in ihrer Heimat. Genau das macht sie so verletzlich: Wenn sich das Wasser veraendert, gibt es kein Entkommen.
+    </p>
+    <p>
+      Steigen die Temperaturen weiter, verschwindet der Sauerstoff, den sie zum Ueberleben braucht. Die Laichplaetze versiegen. Das Wasser wird waermer, der Stress groesser – bis sie irgendwann einfach nicht mehr zurueckkehrt.
+    </p>
+    <div class="quote-box quote-blue">
+      Wenn das Wasser waermer wird, bleibt uns kein Ort zum Ausweichen.
+    </div>
+    <p>
+      Bleibt alles wie bisher, verliert sie zuerst ihr Zuhause – und dann ihre Zukunft. Zwei ihrer drei Rueckzugsorte koennten schon bald fuer immer verloren sein. Und mit ihnen: ein Stueck alpiner Natur, das nie wiederkehrt.
+    </p>
+  </div>
+</section>
+
+<div class="section-spacer"></div>
+
+<!-- Abschnitt: Wenn Seen zu warm werden – wer verschwindet zuerst? -->
+<section class="fullscreen-section" style="position:relative; overflow:hidden;">
+  <img src="img/see_zu_warm_tb.jpg" alt="Adriatische Forelle" class="video-bg">
+  <div class="section-content">
+    <h2 class="impact-title-section">Wenn Seen zu warm werden – wer verschwindet zuerst?</h2>
+    <div class="blog-text">
+      <p>
+        Besonders empfindlich reagieren Kaltwasserarten wie die Adriatische Forelle, Truesche oder Pigo. Sie benoetigen kuehle, sauerstoffreiche Zonen. Steigen die Temperaturen, verschwinden diese Rueckzugsraeume – und mit ihnen die Arten, die sich nicht anpassen koennen. Die ersten Ausfaelle treffen meist die Spezialisten, die nur in wenigen Seen leben.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="section-spacer"></div>
+
+<!-- Abschnitt: Wie stark steigen die Temperaturen? -->
+<section class="fullscreen-section" id="temp-section" style="background:#fff;">
+  <h2 class="impact-title-section">Wie stark steigen die Temperaturen?</h2>
+  <div class="temp-iframe-wrapper">
+    <iframe id="temp-iframe" src="img/plot_forelle_luganersee_animated.html" class="temp-iframe" title="Temperaturverlauf Forelle Luganersee"></iframe>
+  </div>
+  <div class="blog-text">
+    <p>
+      Das Diagramm zeigt den Anstieg der durchschnittlichen Oberflaechentemperatur pro Jahr bis 2099 – aufgeteilt nach Klimaszenarien. Liegt die Linie ueber der kritischen Grenze (rote Linie), ist ein langfristiges Ueberleben nicht mehr moeglich.
+    </p>
+    <p>
+      Auch im unteren Luganersee steigen die Temperaturen gefaehrlich nahe an die Ueberlebensgrenze. Ohne gezielte Schutzmassnahmen koennte die Adriatische Forelle vollstaendig aus der Schweiz verschwinden.
+    </p>
+  </div>
+</section>
+
+<div class="section-spacer"></div>
+
+<!-- Neue Neuenburgersee-Section -->
+<section class="neuenburgersee-section">
+  <div class="scroll-box-container">
+    <div class="scroll-box left">
+      <div class="text-content">
+        <p class="bigger-text"><strong>Wenn Wasser zu warm wird – was passiert dann?</strong></p>
+      </div>
+    </div>
+
+    <div class="scroll-box right">
+      <div class="text-content">
+        <p>Für viele Kaltwasserarten ist das kein harmloser Temperaturanstieg, sondern eine existenzielle Bedrohung. Denn die Anpassungsfähigkeit von Fischen an hohe Temperaturen ist begrenzt – ihr Stoffwechsel, ihre Sauerstoffversorgung und ihre Lebensfunktionen sind eng mit der Wassertemperatur verknüpft</p>
+      </div>
+    </div>
+
+    <div class="scroll-box center">
+      <div class="text-content">
+        <p>Je wärmer das Wasser, desto schneller arbeitet der Stoffwechsel. Das bedeutet: Die Tiere benötigen mehr Energie und mehr Sauerstoff.
+            Gleichzeitig sinkt der Sauerstoffgehalt des Wassers mit steigender Temperatur – ein doppelter Stress.
+            Diese Belastung führt zu chronischem physiologischem Stress: Das Immunsystem wird geschwächt, das Wachstum gebremst, die Fortpflanzung gestört</p>
+      </div>
+    </div>
+
+    <div class="scroll-box left">
+      <div class="text-content">
+        <p>Wird die kritische Temperaturschwelle dauerhaft überschritten, kann die Population nicht mehr überleben – der Bestand bricht zusammen oder verschwindet vollständig.
+            Diese Prozesse laufen unsichtbar unter der Wasseroberfläche ab. Doch sie sind messbar – und prognostizierbar. Klimamodelle zeigen, dass viele Seen in der Schweiz schon heute an die Grenzen kommen – und dass sich die Situation bis Ende des Jahrhunderts weiter zuspitzt.
+        </p>
+      </div>
+    </div>
+
+    <div class="scroll-box right">
+      <div class="text-content">
+        <p class="bigger-text"><strong>Wie lange überleben Fische bei zu hohen Temperaturen?</strong></p>
+      </div>
+    </div>
+
+    <div class="scroll-box center">
+      <div class="text-content">
+        <p>
+          Die Überlebensdauer von Fischen bei zu hohen Wassertemperaturen variiert stark – je nach Art, Temperaturhöhe, Dauer der Exposition und Sauerstoffgehalt des Wassers: <br>
+          <strong>Fischart:</strong> Kaltwasserarten wie Forellen und Äschen reagieren besonders empfindlich. Ihr optimaler Temperaturbereich liegt zwischen 5 °C und 18 °C.<br>
+          <strong>Temperaturhöhe und Dauer:</strong> Bei Temperaturen über 23 °C sterben empfindliche Arten oft innerhalb weniger Stunden bis Tage, wenn sie keinen Rückzugsort finden.<br>
+          <strong>Sauerstoffgehalt:</strong> Warme Temperaturen verringern den gelösten Sauerstoff im Wasser – während der Bedarf der Fische gleichzeitig steigt.</p>
+      </div>
+    </div>
+
+    <div class="scroll-box left">
+      <div class="text-content">
+        <p><b>Beispiel:</b> Im August 2018 wurden im Rhein über eine Tonne toter Äschen gefunden – verursacht durch langanhaltende Hitze und Sauerstoffmangel.</p>
+        <p>
+          Quellen:
+          <a href="https://www.petri-heil.ch/index.php?cmspath=de%2Faesche-im-hochrhein--wie-weiter--677&utm_source=chatgpt.com">Petri-Heil</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-spacer"></div>
+
+<!-- Aktualisierte Klimaszenarien-Section -->
+<section class="szenarien-section">
+  <div class="overlay">
+    <div class="info-box green">
+      <h2>Best-Case Szenario<br>
+        (RCP 2.6)
+      </h2>
+      <p>
+        Es wird weltweit konsequent Klimaschutz betrieben.<br>
+        Die globale Erwärmung bleibt unter 2 °C.<br>
+        Ökosysteme haben eine echte Chance, sich zu regenerieren, und viele Arten können erhalten bleiben.<br>
+      </p>
+    </div>
+    <div class="info-box yellow">
+      <h2>Reference Szenario<br> 
+        (RCP 4.5)</h2>
+      <p>
+        Es gibt gewisse Klimaschutzmassnahmen, aber sie reichen nicht aus, um die Erwärmung zu stoppen.<br>
+        Die Temperaturen steigen moderat an.<br>
+        Einige Ökosysteme passen sich an – andere leiden.<br>
+      </p>
+    </div>
+    <div class="info-box red">
+      <h2>Worst-Case Szenario<br>
+        (RCP 8.5)</h2>
+      <p>
+        Die Emissionen steigen weiter an wie bisher.<br>
+        Die globale Erwärmung übersteigt 4 °C bis 2100.<br>
+        Viele Lebensräume werden zerstört und das Artenaussterben nimmt dramatisch zu.<br>
